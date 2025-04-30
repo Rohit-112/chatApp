@@ -23,7 +23,7 @@ public class ChatController {
     @MessageMapping("/chat.sendMessage")
     public void sendMessage(@Payload ChatMessage message) {
 
-        // from here can save to database
+        // from here we can save to database
         messagingTemplate.convertAndSendToUser(
                 message.getReceiver(),
                 "/queue/messages",
@@ -31,20 +31,4 @@ public class ChatController {
         );
 
     }
-
-   /* @MessageMapping("/chat.addUser")
-    @SendTo("/topic/public")
-    public ChatMessage addUser(ChatMessage message) {
-        message.setType(MessageType.JOIN);
-        message.setContent(message.getSender() + "has joined the room");
-        return message;
-    }
-
-    @MessageMapping("/chat.removeUser")
-    @SendTo("/topic/public")
-    public ChatMessage removeUser(ChatMessage message) {
-        message.setType(MessageType.LEAVE);
-        message.setContent(message.getSender() + "has left the room");
-        return message;
-    }*/
 }
