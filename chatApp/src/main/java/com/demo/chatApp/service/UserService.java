@@ -23,7 +23,6 @@ public class UserService {
         if (userRepository.existsByUsername(user.getUsername())) {
             throw new RuntimeException("Username already taken");
         }
-
         // directly save raw password for now (not recommended for production)
         return userRepository.save(user);
     }

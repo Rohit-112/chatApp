@@ -1,19 +1,47 @@
 package com.demo.chatApp.controller;
 
+import com.demo.chatApp.model.User;
 import com.demo.chatApp.security.JwtTokenUtil;
+import com.demo.chatApp.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
+@RequestMapping("/api/auth")
 public class AuthController {
+
+    private final UserService userService;
 
     private final JwtTokenUtil jwtTokenUtil;
 
     @Autowired
-    public AuthController(JwtTokenUtil jwtTokenUtil){
+    public AuthController(JwtTokenUtil jwtTokenUtil, UserService userService){
         this.jwtTokenUtil = jwtTokenUtil;
+        this.userService = userService;
+    }
+
+    @PostMapping("/signup")
+    public ResponseEntity<?> registerUser(@RequestBody User user){
+        System.out.println("hit return" + user);
+        try{
+            User savedUser = userService.registerUser(user);
+            return ResponseEntity.ok(savedUser);
+        }catch (RuntimeException e){
+            System.out.println("error "+ e);
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<?> loginUser(@RequestBody User user){
+        System.out.println("hit return" + user);
+        boolean isValid = userService.validateUser(user.getUsername(),user.getPassword());
+        if (isValid){
+            return ResponseEntity.ok("Login Successful");
+        }else {
+            return ResponseEntity.status(401).body("invalid username or password");
+        }
     }
 
     @GetMapping("/api/token/{username}")
