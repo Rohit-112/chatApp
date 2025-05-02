@@ -23,7 +23,6 @@ public class AuthController {
 
     @PostMapping("/signup")
     public ResponseEntity<?> registerUser(@RequestBody User user){
-        System.out.println("hit return" + user);
         try{
             User savedUser = userService.registerUser(user);
             return ResponseEntity.ok(savedUser);
@@ -35,10 +34,10 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<?> loginUser(@RequestBody User user){
-        System.out.println("hit return" + user);
         boolean isValid = userService.validateUser(user.getUsername(),user.getPassword());
         if (isValid){
-            return ResponseEntity.ok("Login Successful");
+            String token = jwtTokenUtil.generateToken(user.getUsername());
+            return ResponseEntity.ok(token);
         }else {
             return ResponseEntity.status(401).body("invalid username or password");
         }

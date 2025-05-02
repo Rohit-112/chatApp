@@ -2,55 +2,61 @@ package com.demo.chatApp.security;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
-import io.jsonwebtoken.security.SignatureException;
+import jakarta.annotation.PostConstruct;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+
+import javax.crypto.SecretKey;
+import java.util.Base64;
+import java.util.Date;
 
 @Component
 public class JwtTokenUtil {
 
-    private final String jwtSecret = "secretKey";
+    @Value("${jwt.secret}")
+    private String secretKeyBase64;
 
-    public String getUsernameFromToken(String token) {
-        return Jwts.parserBuilder()
-                .setSigningKey(jwtSecret.getBytes())
-                .build()
-                .parseClaimsJws(token)
-                .getBody()
-                .getSubject();
+    @PostConstruct
+    public void logSecretKey() {
+        System.out.println("Secret Key: " + secretKeyBase64);
     }
 
-    public boolean validateToken(String token) {
+    public SecretKey getSecretKey(){
+        byte[] decodeKey = Base64.getDecoder().decode(secretKeyBase64);
+        return Keys.hmacShaKeyFor(decodeKey);
+    }
+
+    public String generateToken(String username) {
+        System.out.println("Hello: " + username);
+        // FOR 1 HOUR
+        long EXPIRATION_TIME = 1000 * 60 * 60;
+        return Jwts.builder()
+                .setSubject(username)
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
+                .signWith(getSecretKey(), SignatureAlgorithm.HS256)
+                .compact();
+    }
+
+    public boolean validateToken(String token){
         try {
             Jwts.parserBuilder()
-                    .setSigningKey(jwtSecret.getBytes())
+                    .setSigningKey(getSecretKey())
                     .build()
                     .parseClaimsJws(token);
             return true;
-        } catch (ExpiredJwtException | UnsupportedJwtException |
-                 MalformedJwtException | SignatureException |
-                IllegalArgumentException ex) {
-            System.out.println("JWT validation failed: " + ex.getMessage());
+        }catch (JwtException e){
+            System.out.println("Token invalid" + e.getMessage());
             return false;
         }
     }
 
-    public String generateToken(String username) {
-        String token = Jwts.builder()
-                .setSubject(username)
-                .signWith(Keys.hmacShaKeyFor("secretKey".getBytes()), SignatureAlgorithm.HS256)
-                .compact();
-        System.out.println("generated token: " + token);
-        return token;
-    }
-
-    public String getUsernameToken(String token){
-        System.out.println("Token received: " + token);
+    public String getUsernameFromToken(String token) {
         return Jwts.parserBuilder()
-                .setSigningKey("secretKey".getBytes())
+                .setSigningKey(getSecretKey() )
                 .build()
                 .parseClaimsJws(token)
                 .getBody()
                 .getSubject();
     }
-
 }
