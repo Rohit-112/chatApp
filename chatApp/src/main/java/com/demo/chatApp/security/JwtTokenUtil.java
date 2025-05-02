@@ -2,7 +2,6 @@ package com.demo.chatApp.security;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
-import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -15,11 +14,6 @@ public class JwtTokenUtil {
 
     @Value("${jwt.secret}")
     private String secretKeyBase64;
-
-    @PostConstruct
-    public void logSecretKey() {
-        System.out.println("Secret Key: " + secretKeyBase64);
-    }
 
     public SecretKey getSecretKey(){
         byte[] decodeKey = Base64.getDecoder().decode(secretKeyBase64);

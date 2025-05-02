@@ -4,6 +4,7 @@ import com.demo.chatApp.model.User;
 import com.demo.chatApp.repository.UserRepository;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -11,19 +12,16 @@ import java.util.Optional;
 @Service
 public class UserService {
 
-    private final UserRepository userRepository;
-
     @Autowired
-    public UserService(UserRepository userRepository) {
-        this.userRepository = userRepository;
-    }
+    private UserRepository userRepository;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     public User registerUser(@NotNull User user) {
-        // check if username already exists
         if (userRepository.existsByUsername(user.getUsername())) {
             throw new RuntimeException("Username already taken");
         }
-        // directly save raw password for now (not recommended for production)
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
         return userRepository.save(user);
     }
 
@@ -34,7 +32,9 @@ public class UserService {
     public boolean validateUser(String username, String rawPassword) {
         Optional<User> optionalUser = userRepository.findByUsername(username);
         if (optionalUser.isPresent()) {
-            return rawPassword.equals(optionalUser.get().getPassword()); // plain text comparison
+            User user = optionalUser.get();
+
+            return passwordEncoder.matches(rawPassword, user.getPassword());
         }
         return false;
     }
