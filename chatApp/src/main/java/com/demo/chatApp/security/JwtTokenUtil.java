@@ -22,7 +22,6 @@ public class JwtTokenUtil {
 
     public String generateToken(String username) {
         System.out.println("Hello: " + username);
-        // FOR 1 HOUR
         long EXPIRATION_TIME = 1000 * 60 * 60;
         return Jwts.builder()
                 .setSubject(username)

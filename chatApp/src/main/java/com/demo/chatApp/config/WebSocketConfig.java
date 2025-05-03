@@ -2,6 +2,7 @@ package com.demo.chatApp.config;
 
 import com.demo.chatApp.security.JwtTokenUtil;
 import lombok.NonNull;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
@@ -12,16 +13,14 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 @EnableWebSocketMessageBroker
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
-    private final JwtTokenUtil jwtTokenUtil;
+    @Autowired
+    private JwtTokenUtil jwtTokenUtil;
 
-    public WebSocketConfig (JwtTokenUtil jwtTokenUtil){
-        this.jwtTokenUtil = jwtTokenUtil;
-    }
 
     @Override
     public void registerStompEndpoints(@NonNull StompEndpointRegistry registry) {
         registry.addEndpoint("/ws-chat")
-                .setHandshakeHandler(new CustomHandshakeHandler(jwtTokenUtil))
+                .setHandshakeHandler(new CustomHandshakeHandler())
                 .setAllowedOriginPatterns("*")
                 .withSockJS();
     }

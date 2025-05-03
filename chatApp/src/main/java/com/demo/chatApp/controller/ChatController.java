@@ -10,6 +10,8 @@ import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 
+import java.security.Principal;
+
 @Controller("chatController")
 public class ChatController {
 
@@ -21,7 +23,8 @@ public class ChatController {
     }
 
     @MessageMapping("/chat.sendMessage")
-    public void sendMessage(@Payload ChatMessage message) {
+    public void sendMessage(@Payload ChatMessage message, Principal principal) {
+        System.out.println("Message from userId: " + principal.getName());
 
         // from here we can save to database
         messagingTemplate.convertAndSendToUser(
