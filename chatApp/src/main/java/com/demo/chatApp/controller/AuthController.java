@@ -16,6 +16,7 @@ import java.util.Collections;
 
 @RestController
 @RequestMapping("/api/auth")
+@CrossOrigin(origins = "*") // Allow requests from any origin for simplicity, adjust as needed
 public class AuthController {
 
     private final UserService userService;
