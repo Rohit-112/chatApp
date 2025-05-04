@@ -39,7 +39,7 @@ public class AuthController {
             User user = User.builder()
                     .username(request.getUsername())
                     .email(request.getEmail())
-                    .password(passwordEncoder.encode(request.getPassword()))
+                    .password(request.getPassword())
                     .build();
 
             User savedUser = userService.registerUser(user);
@@ -53,7 +53,9 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> loginUser(@RequestBody AuthRequest request) {
         User user = userService.getByUsername(request.getUsername());
+        System.out.println("User:" + user);
         if (user != null && passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+            System.out.println("Password: " + user.getPassword().toString());
             String token = jwtTokenUtil.generateToken(user.getUsername());
             return ResponseEntity.ok(new AuthResponse(token));
         } else {
