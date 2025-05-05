@@ -3,8 +3,10 @@ package com.demo.chatApp.config;
 import com.demo.chatApp.model.User;
 import com.demo.chatApp.repository.UserRepository;
 import com.demo.chatApp.security.JwtTokenUtil;
+import com.demo.chatApp.security.Principal.CustomPrincipal;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.server.ServerHttpRequest;
+import org.springframework.stereotype.Component;
 import org.springframework.web.socket.WebSocketHandler;
 import org.springframework.web.socket.server.support.DefaultHandshakeHandler;
 
@@ -12,40 +14,42 @@ import java.security.Principal;
 import java.util.Map;
 import java.util.Optional;
 
+@Component
 public class CustomHandshakeHandler extends DefaultHandshakeHandler {
 
-    @Autowired
-    private JwtTokenUtil jwtTokenUtil;
-    @Autowired
-    private UserRepository userRepository;
+    private final JwtTokenUtil jwtTokenUtil;
 
+    private final UserRepository userRepository;
+
+    @Autowired
+    public CustomHandshakeHandler(JwtTokenUtil jwtTokenUtil, UserRepository userRepository){
+        this.jwtTokenUtil = jwtTokenUtil;
+        this.userRepository = userRepository;
+    }
     @Override
     protected Principal determineUser(ServerHttpRequest request,
                                       WebSocketHandler wsHandler,
                                       Map<String, Object> attributes) {
+
         String query = request.getURI().getQuery();
         System.out.println("Websocket Query: " + query);
-
         if (query == null || !query.contains("token=")) {
-            System.out.println("token missing in query");
+            System.out.println("HandshakeHandler called: query = " + request.getURI().getQuery());
             return null;
         }
 
-        String token = query.split("token=")[1].trim();
-        if (jwtTokenUtil.validateToken(token)) {
-            String username = jwtTokenUtil.getUsernameFromToken(token);
-            System.out.println("Authenticated WebSocket user: " + username);
+        String token = request.getURI().getQuery().split("token=")[1].trim();
+        if (!jwtTokenUtil.validateToken(token)) {
+            System.out.println("Authenticated WebSocket user: ");
+            return null;
+        }
 
-            Optional<User> optionalUser = userRepository.findByUsername(username);
-            if (optionalUser.isPresent()){
-                Long userId = optionalUser.get().getId();
-                System.out.println("User found, Websocket Principal id: " + userId);
-                return userId::toString;
-            }else{
-                System.out.println("User not found for username: " + username);
-            }
-        }else{
-            System.out.println("Invalid JWT token");
+        String username = jwtTokenUtil.getUsernameFromToken(token);
+        Optional<User> user = userRepository.findByUsername(username);
+        if (user.isPresent()) {
+            return new CustomPrincipal(username, user.get().getId());
+        } else {
+            System.out.println("User not found for username: " + username);
         }
         return null;
     }

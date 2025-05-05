@@ -30,18 +30,7 @@ public class UserService {
         return userRepository.findByUsername(username).orElseThrow(() -> new RuntimeException("User not found"));
     }
 
-
-    public Optional<User> findByUsername(String username) {
-        return userRepository.findByUsername(username);
-    }
-
-    public boolean validateUser(String username, String rawPassword) {
-        Optional<User> optionalUser = userRepository.findByUsername(username);
-        if (optionalUser.isPresent()) {
-            User user = optionalUser.get();
-
-            return passwordEncoder.matches(rawPassword, user.getPassword());
-        }
-        return false;
+    public User getByUsernameForSignup(String username) {
+        return userRepository.findByUsername(username).orElse(null);
     }
 }

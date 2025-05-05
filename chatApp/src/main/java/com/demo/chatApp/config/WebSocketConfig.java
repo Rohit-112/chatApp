@@ -1,6 +1,6 @@
 package com.demo.chatApp.config;
 
-import com.demo.chatApp.security.JwtTokenUtil;
+import com.demo.chatApp.security.JwtHandshakeInterceptor;
 import lombok.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
@@ -14,20 +14,24 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Autowired
-    private JwtTokenUtil jwtTokenUtil;
+    private CustomHandshakeHandler customHandshakeHandler;
+
+    @Autowired
+    private JwtHandshakeInterceptor jwtHandshakeInterceptor;
 
 
     @Override
     public void registerStompEndpoints(@NonNull StompEndpointRegistry registry) {
+        System.out.println("Registering WebSocket endpoint...");
         registry.addEndpoint("/ws-chat")
-                .setHandshakeHandler(new CustomHandshakeHandler())
-                .setAllowedOriginPatterns("*")
-                .withSockJS();
+                .setHandshakeHandler(customHandshakeHandler)
+                .addInterceptors(jwtHandshakeInterceptor)
+                .setAllowedOriginPatterns("*");
     }
 
     @Override
     public void configureMessageBroker(@NonNull MessageBrokerRegistry config) {
-        config.enableSimpleBroker("/topic/", "/queue/");
+        config.enableSimpleBroker("/topic/","/queue/");
         config.setApplicationDestinationPrefixes("/app");
         config.setUserDestinationPrefix("/user");
     }

@@ -1,6 +1,7 @@
 package com.demo.chatApp.controller;
 
 import com.demo.chatApp.model.User;
+import com.demo.chatApp.model.dto.ApiResponse;
 import com.demo.chatApp.model.dto.AuthRequest;
 import com.demo.chatApp.model.dto.AuthResponse;
 import com.demo.chatApp.model.dto.SignupRequest;
@@ -10,9 +11,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.Collection;
-import java.util.Collections;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -37,6 +35,11 @@ public class AuthController {
     @PostMapping("/signup")
     public ResponseEntity<?> registerUser(@RequestBody SignupRequest request) {
         try {
+            User existingUser = userService.getByUsernameForSignup(request.getUsername());
+            if (existingUser != null) {
+                return ResponseEntity.status(409).body(new ApiResponse<>("Username already exists", 409));
+            }
+
             User user = User.builder()
                     .username(request.getUsername())
                     .email(request.getEmail())
@@ -44,23 +47,30 @@ public class AuthController {
                     .build();
 
             User savedUser = userService.registerUser(user);
-            return ResponseEntity.ok(savedUser);
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+
+            return ResponseEntity.status(201).body(new ApiResponse<>(savedUser));
+
+        } catch (Exception e) {
+            return ResponseEntity.status(400).body(new ApiResponse<>(e.getMessage(), 400));
         }
     }
 
-
     @PostMapping("/login")
-    public ResponseEntity<?> loginUser(@RequestBody AuthRequest request) {
-        User user = userService.getByUsername(request.getUsername());
-        System.out.println("User:" + user);
-        if (user != null && passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            System.out.println("Password: " + user.getPassword().toString());
-            String token = jwtTokenUtil.generateToken(user.getUsername());
-            return ResponseEntity.ok(new AuthResponse(token));
-        } else {
-            return ResponseEntity.status(401).body("Invalid username or password");
+    public ResponseEntity<ApiResponse<?>> loginUser(@RequestBody AuthRequest request) {
+        try {
+            User user = userService.getByUsername(request.getUsername());
+            System.out.println("Fetched user: " + user);
+
+            if (user != null && passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+                System.out.println("Password matched for user: " + user.getUsername());
+                String token = jwtTokenUtil.generateToken(user.getUsername());
+                return ResponseEntity.ok(new ApiResponse<>(new AuthResponse(token)));
+            } else {
+                System.out.println("Invalid password or user not found");
+                return ResponseEntity.status(401).body(new ApiResponse<>("Invalid username or password", 401));
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(new ApiResponse<>("Internal server error", 500));
         }
     }
 

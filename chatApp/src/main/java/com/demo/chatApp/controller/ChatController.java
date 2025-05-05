@@ -32,6 +32,5 @@ public class ChatController {
                 "/queue/messages",
                 message
         );
-
     }
 }
