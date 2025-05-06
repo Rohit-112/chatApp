@@ -1,12 +1,9 @@
 package com.demo.chatApp.controller;
 
 import com.demo.chatApp.model.ChatMessage;
-import com.demo.chatApp.model.MessageType;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
-import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 
@@ -32,5 +29,8 @@ public class ChatController {
                 "/queue/messages",
                 message
         );
+        System.out.println("Received message: " + message + " from: " + principal.getName());
+        System.out.println("Sending to userId: " + message.getReceiver());
+
     }
 }

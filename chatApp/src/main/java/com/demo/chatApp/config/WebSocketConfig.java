@@ -26,11 +26,14 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         registry.addEndpoint("/ws-chat")
                 .setHandshakeHandler(customHandshakeHandler)
                 .addInterceptors(jwtHandshakeInterceptor)
-                .setAllowedOriginPatterns("*");
+                .setAllowedOriginPatterns("*")
+                .withSockJS();
+        System.out.println("WebSocketConfig: intercepting handshake");
     }
 
     @Override
     public void configureMessageBroker(@NonNull MessageBrokerRegistry config) {
+        System.out.println("WebSocketConfig loaded");
         config.enableSimpleBroker("/topic/","/queue/");
         config.setApplicationDestinationPrefixes("/app");
         config.setUserDestinationPrefix("/user");

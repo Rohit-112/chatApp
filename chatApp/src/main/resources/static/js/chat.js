@@ -5,38 +5,32 @@ document.addEventListener('DOMContentLoaded', () => {
     const logoutButton = document.getElementById('logout-button');
     const loggedUser = document.getElementById('logged-user');
 
-    // Get token and username from localStorage
     const token = localStorage.getItem('token');
-    const username = localStorage.getItem('username');
+    console.log("Token from localStorage:", token);
 
-    // Set logged-in username
-    loggedUser.textContent = username || 'Unknown User';
-
-    // Handle user logout
+    // Handle logout
     logoutButton.addEventListener('click', () => {
         localStorage.removeItem('token');
-        localStorage.removeItem('username');
-        window.location.href = '/auth.html'; // Redirect to login page
+        window.location.href = '/auth.html';
     });
 
     // WebSocket connection
-    const socket = new SockJS('/ws-chat');
+    console.log("Attempting to connect to WebSocket...");
+    const socket = new SockJS("http://localhost:8081/ws-chat?token=" + token);
     const stompClient = Stomp.over(socket);
 
-    // Connect to WebSocket server
-    stompClient.connect({ Authorization: `Bearer ${token}` }, (frame) => {
+    stompClient.connect({}, (frame) => {
         console.log('Connected: ' + frame);
 
-        // Subscribe to the user's message queue
-        stompClient.subscribe(`/user/${username}/queue/messages`, (messageOutput) => {
-            // Display received message
+        // Subscribe to user's private queue
+        stompClient.subscribe('/user/queue/messages', (messageOutput) => {
+            console.log("Message received:", messageOutput);
             displayMessage(messageOutput.body, 'received');
         });
     }, (error) => {
         console.error('WebSocket error:', error);
     });
 
-    // Display message in the UI
     const displayMessage = (message, type) => {
         const messageElement = document.createElement('div');
         messageElement.classList.add('message', type);
@@ -45,11 +39,9 @@ document.addEventListener('DOMContentLoaded', () => {
         messageContainer.scrollTop = messageContainer.scrollHeight;
     };
 
-    // Send message to the server
     sendButton.addEventListener('click', () => {
         const message = messageInput.value.trim();
         if (message) {
-            // Display sent message
             displayMessage(message, 'sent');
             sendMessageToServer(message);
             messageInput.value = '';
@@ -57,8 +49,12 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     const sendMessageToServer = (message) => {
-        if (stompClient.connected) {
-            stompClient.send('/app/chat.sendMessage', { Authorization: `Bearer ${token}` }, JSON.stringify({ sender: username, receiver: 'anotherUser', message }));
+        const receiverUsername = prompt('Enter the username of the receiver:');
+        if (stompClient.connected && receiverUsername) {
+            stompClient.send('/app/chat.sendMessage',
+                {},
+                JSON.stringify({ receiver: receiverUsername, message }) // adjust if 'sender' needed
+            );
         }
     };
 });

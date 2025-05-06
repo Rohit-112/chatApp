@@ -3,6 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <title>Chat Page</title>
+  <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1.5.1/dist/sockjs.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+
+  <script src="js/chat.js" defer></script>
+
+
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -93,7 +99,7 @@
   </div>
 
   <div>
-    <input type="text" id="message-input" placeholder="Type your message..." />
+    <label for="message-input"></label><input type="text" id="message-input" placeholder="Type your message..." />
     <button id="send-button">Send</button>
   </div>
 </div>

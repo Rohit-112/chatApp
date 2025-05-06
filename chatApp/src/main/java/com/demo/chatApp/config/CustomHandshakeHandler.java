@@ -32,25 +32,28 @@ public class CustomHandshakeHandler extends DefaultHandshakeHandler {
                                       Map<String, Object> attributes) {
 
         String query = request.getURI().getQuery();
-        System.out.println("Websocket Query: " + query);
+        System.out.println("WebSocket Query: " + query);
         if (query == null || !query.contains("token=")) {
-            System.out.println("HandshakeHandler called: query = " + request.getURI().getQuery());
             return null;
         }
 
         String token = request.getURI().getQuery().split("token=")[1].trim();
+
         if (!jwtTokenUtil.validateToken(token)) {
-            System.out.println("Authenticated WebSocket user: ");
+            System.out.println("Invalid token received during WebSocket handshake");
             return null;
         }
 
         String username = jwtTokenUtil.getUsernameFromToken(token);
         Optional<User> user = userRepository.findByUsername(username);
+
         if (user.isPresent()) {
+            System.out.println("WebSocket authenticated as: " + username);
             return new CustomPrincipal(username, user.get().getId());
         } else {
             System.out.println("User not found for username: " + username);
+            return null;
         }
-        return null;
     }
+
 }

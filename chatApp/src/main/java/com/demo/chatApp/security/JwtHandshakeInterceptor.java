@@ -23,12 +23,14 @@ public class JwtHandshakeInterceptor implements HandshakeInterceptor {
     @Override
     public boolean beforeHandshake(ServerHttpRequest request, ServerHttpResponse response,
                                    WebSocketHandler wsHandler, Map<String, Object> attributes) {
+        System.out.println("=== Handshake Triggered ===");
 
         if (!(request instanceof ServletServerHttpRequest)) {
             return false;
         }
 
         String token = ((ServletServerHttpRequest) request).getServletRequest().getParameter("token");
+        System.out.println("Token: " + token);
 
         if (token == null || token.isEmpty()) {
             System.out.println("Missing token");

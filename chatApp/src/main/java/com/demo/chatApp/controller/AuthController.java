@@ -73,9 +73,4 @@ public class AuthController {
             return ResponseEntity.status(500).body(new ApiResponse<>("Internal server error", 500));
         }
     }
-
-    @GetMapping("/api/token/{username}")
-    public String generateToken(@PathVariable String username) {
-        return jwtTokenUtil.getUsernameFromToken(username);
-    }
 }

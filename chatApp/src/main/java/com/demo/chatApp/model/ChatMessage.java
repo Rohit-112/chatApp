@@ -11,8 +11,7 @@ public class ChatMessage {
 
     private MessageType type;
     private String content;
-    private String sender;
-    private String receiver; // for private message
-    private String chatRoomId; // for multiple chat room
+    private String senderName;
+    private String receiver;
     private String timestamp;
 }
