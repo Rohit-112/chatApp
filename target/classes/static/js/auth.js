@@ -53,13 +53,14 @@ document.addEventListener('DOMContentLoaded', () => {
             : { username, password, email };
 
         try {
-            const response = await fetch(`/api/auth/${isLogin ? 'login' : 'signup'}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
+             const response = await fetch(`/api/auth/${isLogin ? 'login' : 'signup'}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
 
             const data = await response.json();
+            console.log('Response data:', data);
 
             if (!response.ok) {
                 errorMsg.textContent = data.message || 'Something went wrong.';
@@ -67,10 +68,15 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             // Save JWT token to localStorage
-            localStorage.setItem('token', data.token);
+            if (data.data && data.data.token) {
+                        localStorage.setItem('token', data.data.token);
+                        console.log('Saved token to localStorage:', data.data.token);
 
-            // Redirect to chat UI
-            window.location.href = '/chat.html';
+                        // Redirect to chat UI
+                        window.location.href = '/chat.html';
+                    } else {
+                        errorMsg.textContent = 'Token is missing in the response.';
+                    }
 
         } catch (err) {
             console.error('Request failed:', err);
