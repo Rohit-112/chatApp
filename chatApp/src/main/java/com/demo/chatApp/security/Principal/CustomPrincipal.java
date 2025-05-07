@@ -4,20 +4,20 @@ import java.security.Principal;
 
 public class CustomPrincipal implements Principal {
 
-    private final String username;
-    private final Long Id;
+    private final String name;
+    private final Long userId;
 
-    public CustomPrincipal(String username, Long Id){
-        this.username = username;
-        this.Id = Id;
+    public CustomPrincipal(String name, Long userId) {
+        this.name = name;
+        this.userId = userId;
     }
 
     @Override
     public String getName() {
-        return username;
+        return name;
     }
 
-    public Long getUserId(){
-        return Id;
+    public Long getUserId() {
+        return userId;
     }
 }

@@ -9,6 +9,7 @@ import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.WebSocketHandler;
 import org.springframework.web.socket.server.support.DefaultHandshakeHandler;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.security.Principal;
 import java.util.Map;
@@ -18,7 +19,6 @@ import java.util.Optional;
 public class CustomHandshakeHandler extends DefaultHandshakeHandler {
 
     private final JwtTokenUtil jwtTokenUtil;
-
     private final UserRepository userRepository;
 
     @Autowired
@@ -26,34 +26,41 @@ public class CustomHandshakeHandler extends DefaultHandshakeHandler {
         this.jwtTokenUtil = jwtTokenUtil;
         this.userRepository = userRepository;
     }
+
     @Override
     protected Principal determineUser(ServerHttpRequest request,
                                       WebSocketHandler wsHandler,
                                       Map<String, Object> attributes) {
 
-        String query = request.getURI().getQuery();
-        System.out.println("WebSocket Query: " + query);
-        if (query == null || !query.contains("token=")) {
+        String token = UriComponentsBuilder.fromUriString(request.getURI().toString())
+                .build()
+                .getQueryParams()
+                .getFirst("token");
+
+        if (token == null || token.isEmpty()) {
+            System.out.println("Token missing in query string.");
             return null;
         }
 
-        String token = request.getURI().getQuery().split("token=")[1].trim();
-
         if (!jwtTokenUtil.validateToken(token)) {
-            System.out.println("Invalid token received during WebSocket handshake");
+            System.out.println("Invalid token.");
             return null;
         }
 
         String username = jwtTokenUtil.getUsernameFromToken(token);
-        Optional<User> user = userRepository.findByUsername(username);
-
-        if (user.isPresent()) {
-            System.out.println("WebSocket authenticated as: " + username);
-            return new CustomPrincipal(username, user.get().getId());
-        } else {
-            System.out.println("User not found for username: " + username);
+        if (username == null || username.isEmpty()) {
+            System.out.println("Username is null or empty.");
             return null;
         }
+
+        Optional<User> user = userRepository.findByUsername(username);
+        if (user.isEmpty()) {
+            System.out.println("User not found: " + username);
+            return null;
+        }
+
+        System.out.println("Authenticated user: " + username);
+        return new CustomPrincipal(username, user.get().getId());
     }
 
 }

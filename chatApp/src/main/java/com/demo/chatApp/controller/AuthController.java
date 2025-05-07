@@ -12,6 +12,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @RestController
 @RequestMapping("/api/auth")
 @CrossOrigin(origins = "*") // Allow requests from any origin for simplicity, adjust as needed
@@ -71,6 +74,22 @@ public class AuthController {
             }
         } catch (Exception e) {
             return ResponseEntity.status(500).body(new ApiResponse<>("Internal server error", 500));
+        }
+    }
+
+    @GetMapping("/users")
+    public ResponseEntity<ApiResponse<?>> getAllUsername(){
+        System.out.println("requst for all users");
+        try {
+            List<User> users = userService.getAllUsers();
+            List<String> usernames = users.stream()
+                    .map(User::getUsername)
+                    .toList();
+
+            return ResponseEntity.ok(new ApiResponse<>(usernames));
+        } catch (RuntimeException e) {
+            System.out.println("All Users Api" + e.getMessage());
+            return ResponseEntity.status(500).body(new ApiResponse<>("Failed to fetch users", 500));
         }
     }
 }

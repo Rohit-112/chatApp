@@ -1,60 +1,112 @@
+let stompClient = null;
+let selectedUsername = null;
+let currentUsername = null;
+
 document.addEventListener('DOMContentLoaded', () => {
-    const messageContainer = document.getElementById('message-container');
-    const messageInput = document.getElementById('message-input');
-    const sendButton = document.getElementById('send-button');
-    const logoutButton = document.getElementById('logout-button');
-    const loggedUser = document.getElementById('logged-user');
-
-    const token = localStorage.getItem('token');
-    console.log("Token from localStorage:", token);
-
-    // Handle logout
-    logoutButton.addEventListener('click', () => {
-        localStorage.removeItem('token');
-        window.location.href = '/auth.html';
-    });
-
-    // WebSocket connection
-    console.log("Attempting to connect to WebSocket...");
-    const socket = new SockJS("http://localhost:8081/ws-chat?token=" + token);
-    const stompClient = Stomp.over(socket);
-
-    stompClient.connect({}, (frame) => {
-        console.log('Connected: ' + frame);
-
-        // Subscribe to user's private queue
-        stompClient.subscribe('/user/queue/messages', (messageOutput) => {
-            console.log("Message received:", messageOutput);
-            displayMessage(messageOutput.body, 'received');
-        });
-    }, (error) => {
-        console.error('WebSocket error:', error);
-    });
-
-    const displayMessage = (message, type) => {
-        const messageElement = document.createElement('div');
-        messageElement.classList.add('message', type);
-        messageElement.textContent = message;
-        messageContainer.appendChild(messageElement);
-        messageContainer.scrollTop = messageContainer.scrollHeight;
-    };
-
-    sendButton.addEventListener('click', () => {
-        const message = messageInput.value.trim();
-        if (message) {
-            displayMessage(message, 'sent');
-            sendMessageToServer(message);
-            messageInput.value = '';
-        }
-    });
-
-    const sendMessageToServer = (message) => {
-        const receiverUsername = prompt('Enter the username of the receiver:');
-        if (stompClient.connected && receiverUsername) {
-            stompClient.send('/app/chat.sendMessage',
-                {},
-                JSON.stringify({ receiver: receiverUsername, message }) // adjust if 'sender' needed
-            );
-        }
-    };
+  currentUsername = prompt("Enter your username (for test purpose only):");
+  connectWebSocket();
+  fetchUserList();
 });
+
+function connectWebSocket() {
+const token = localStorage.getItem('token');
+    console.log("Token from localStorage:", token)
+  if (!token) {
+    console.error("JWT Token missing");
+    return;
+  }
+
+ const socketUrl = `ws://localhost:8081/ws?token=${token}`;
+  console.log("Attempting to connect to WebSocket:", socketUrl);
+
+  // Initialize stompClient with the WebSocket URL
+  stompClient = Stomp.over(new WebSocket(socketUrl));
+
+  // Open WebSocket connection
+  stompClient.connect(
+    { Authorization: `Bearer ${token}` },
+    function (frame) {
+      console.log('Connected: ' + frame);
+      console.log('Connection state:', stompClient.connected ? 'Connected' : 'Not Connected');
+
+      // Subscribe to a user-specific message queue
+      stompClient.subscribe('/user/queue/messages', function (messageOutput) {
+        const message = JSON.parse(messageOutput.body);
+        displayIncomingMessage(message);
+      });
+    },
+    function (error) {
+      console.error('Connection error:', error);
+    }
+  );
+}
+
+// Fetch and display users
+function fetchUserList() {
+  const apiUrl = 'http://localhost:8081/api/auth/users';
+
+  fetch(apiUrl)
+    .then(response => response.json())
+    .then(responseJson => {
+      const users = responseJson.data;
+
+      const userListContainer = document.getElementById('userList');
+      userListContainer.innerHTML = '';
+
+      users.forEach(username => {
+        if (username === currentUsername) return; // Don't show self
+
+        const userItem = document.createElement('li');
+        userItem.textContent = username;
+        userItem.classList.add('user-item');
+        userItem.style.padding = '10px';
+        userItem.style.cursor = 'pointer';
+        userItem.style.borderBottom = '1px solid #ddd';
+
+        userItem.addEventListener('click', () => {
+          selectUser(username);
+        });
+
+        userListContainer.appendChild(userItem);
+      });
+    })
+    .catch(error => console.error('Error fetching user list:', error));
+}
+
+function selectUser(username) {
+  selectedUsername = username;
+  const selectedUserNameElement = document.getElementById('selectedUserName');
+  selectedUserNameElement.textContent = "Chat with: " + username;
+
+  loadChatHistory(username);
+}
+
+function loadChatHistory(username) {
+  const chatMessages = document.getElementById('chatMessages');
+  chatMessages.innerHTML = `<div><strong>Chat history with ${username}:</strong></div>`;
+}
+
+function sendMessage() {
+  const messageInput = document.getElementById('messageInput');
+  const message = messageInput.value;
+
+  if (message && selectedUsername && stompClient) {
+    const chatMessage = {
+      senderName: currentUsername,
+      receiver: selectedUsername,
+      message: message,
+      timestamp: new Date().toISOString()
+    };
+
+    stompClient.send("/app/chat/" + selectedUsername, {}, JSON.stringify(chatMessage));
+
+    const chatMessages = document.getElementById('chatMessages');
+    chatMessages.innerHTML += `<div><strong>You:</strong> ${message}</div>`;
+    messageInput.value = '';
+  }
+}
+
+function displayIncomingMessage(message) {
+  const chatMessages = document.getElementById('chatMessages');
+  chatMessages.innerHTML += `<div><strong>${message.senderName}:</strong> ${message.message}</div>`;
+}

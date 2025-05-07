@@ -1,9 +1,10 @@
 package com.demo.chatApp.security;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.server.ServerHttpRequest;
-import org.springframework.http.server.ServerHttpResponse;
 import org.springframework.http.server.ServletServerHttpRequest;
+import org.springframework.http.server.ServerHttpResponse;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.WebSocketHandler;
 import org.springframework.web.socket.server.HandshakeInterceptor;
@@ -16,41 +17,42 @@ public class JwtHandshakeInterceptor implements HandshakeInterceptor {
     private final JwtTokenUtil jwtTokenUtil;
 
     @Autowired
-    public JwtHandshakeInterceptor(JwtTokenUtil jwtTokenUtil){
+    public JwtHandshakeInterceptor(JwtTokenUtil jwtTokenUtil) {
         this.jwtTokenUtil = jwtTokenUtil;
     }
 
     @Override
     public boolean beforeHandshake(ServerHttpRequest request, ServerHttpResponse response,
-                                   WebSocketHandler wsHandler, Map<String, Object> attributes) {
-        System.out.println("=== Handshake Triggered ===");
+                                   WebSocketHandler wsHandler, Map<String, Object> attributes) throws Exception {
+        System.out.println("[HandshakeInterceptor] Interceptor triggered");
 
         if (!(request instanceof ServletServerHttpRequest)) {
             return false;
         }
 
-        String token = ((ServletServerHttpRequest) request).getServletRequest().getParameter("token");
-        System.out.println("Token: " + token);
+        String token = ((ServletServerHttpRequest) request)
+                .getServletRequest()
+                .getParameter("token");
 
         if (token == null || token.isEmpty()) {
-            System.out.println("Missing token");
+            System.out.println("[HandshakeInterceptor] Missing token");
             return false;
         }
 
         try {
             String username = jwtTokenUtil.getUsernameFromToken(token);
-            System.out.println("Username: " + jwtTokenUtil.getUsernameFromToken(token));
+            System.out.println("[HandshakeInterceptor] Authenticated user: " + username);
+
             if (username == null || username.isEmpty()) {
-                System.out.println("Invalid token: no username");
                 return false;
             }
 
-            System.out.println("Skipping token check for debug");
             attributes.put("username", username);
+            attributes.put("token", token);
             return true;
 
         } catch (Exception e) {
-            System.out.println("Token validation failed: " + e.getMessage());
+            System.out.println("[HandshakeInterceptor] Token parsing failed: " + e.getMessage());
             return false;
         }
     }
@@ -60,6 +62,6 @@ public class JwtHandshakeInterceptor implements HandshakeInterceptor {
                                ServerHttpResponse response,
                                WebSocketHandler wsHandler,
                                Exception exception) {
-
+        // No-op
     }
 }

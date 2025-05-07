@@ -1,108 +1,42 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Chat Page</title>
-  <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1.5.1/dist/sockjs.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
-
-  <script src="js/chat.js" defer></script>
-
-
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f4f4f4;
-      margin: 0;
-      padding: 0;
-    }
-
-    header {
-      background-color: #4CAF50;
-      color: white;
-      padding: 15px;
-      text-align: center;
-      position: relative;
-    }
-
-    #logged-user {
-      font-weight: bold;
-    }
-
-    #logout-button {
-      position: absolute;
-      right: 10px;
-      top: 10px;
-      padding: 6px 12px;
-      background-color: red;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-
-    .content {
-      padding: 20px;
-    }
-
-    #message-container {
-      max-height: 300px;
-      overflow-y: auto;
-      border: 1px solid #ccc;
-      padding: 10px;
-      background: white;
-      margin-bottom: 10px;
-    }
-
-    .message {
-      margin: 5px 0;
-      padding: 8px 12px;
-      border-radius: 10px;
-      max-width: 60%;
-      word-wrap: break-word;
-      display: inline-block;
-      clear: both;
-    }
-
-    .sent {
-      background-color: #dcf8c6;
-      float: right;
-      text-align: right;
-    }
-
-    .received {
-      background-color: #ffffff;
-      float: left;
-      text-align: left;
-    }
-
-    #message-input {
-      width: 70%;
-      padding: 8px;
-    }
-
-    #send-button {
-      padding: 8px 12px;
-    }
-  </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Chat App</title>
 </head>
-<body>
+<body style="margin: 0; font-family: Arial, sans-serif;">
 
-<header>
-  Chat Room - Logged in as <span id="logged-user"></span>
-  <button id="logout-button">Logout</button>
-</header>
+<div class="container" style="display: flex; height: 100vh;">
 
-<div class="content">
-  <div id="message-container">
-    <!-- Messages will appear here -->
+  <!-- Sidebar (User list) -->
+  <div class="sidebar" style="width: 25%; background-color: #f1f1f1; border-right: 1px solid #ccc; padding: 10px; overflow-y: auto;">
+    <h2 style="margin-top: 0;">Users</h2>
+    <ul id="userList" style="list-style-type: none; padding: 0;">
+      <!-- User list will be populated here by JavaScript -->
+    </ul>
   </div>
 
-  <div>
-    <label for="message-input"></label><input type="text" id="message-input" placeholder="Type your message..." />
-    <button id="send-button">Send</button>
+  <!-- Chat panel -->
+  <div class="chat-panel" style="width: 75%; display: flex; flex-direction: column;">
+    <div class="chat-header" style="padding: 10px; background-color: #f1f1f1; border-bottom: 1px solid #ccc;">
+      <h3 id="selectedUserName" style="margin: 0; font-size: 18px; font-weight: bold;">Select a user to chat</h3>
+    </div>
+    <div id="chatMessages" class="chat-messages" style="flex: 1; padding: 10px; overflow-y: auto; background-color: #fafafa;">
+      <!-- Messages will be dynamically added here -->
+    </div>
+    <div class="chat-input" style="display: flex; padding: 10px; border-top: 1px solid #ccc;">
+      <input type="text" id="messageInput" placeholder="Type a message..." style="flex: 1; padding: 8px; font-size: 16px;" />
+      <button onclick="sendMessage()" style="padding: 8px 16px; margin-left: 10px;">Send</button>
+    </div>
   </div>
+
 </div>
+
+<!--<script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>-->
+<script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/chat.js"></script>
 
 </body>
 </html>
