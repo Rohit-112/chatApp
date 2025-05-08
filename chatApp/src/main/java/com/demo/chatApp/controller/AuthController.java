@@ -7,12 +7,17 @@ import com.demo.chatApp.model.dto.AuthResponse;
 import com.demo.chatApp.model.dto.SignupRequest;
 import com.demo.chatApp.security.JwtTokenUtil;
 import com.demo.chatApp.service.UserService;
+import com.demo.chatApp.util.WebSocketEventListener;
+import com.demo.chatApp.util.WebSocketSessionTracker;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @RestController
@@ -21,7 +26,8 @@ import java.util.stream.Collectors;
 public class AuthController {
 
     private final UserService userService;
-
+    @Autowired
+    private WebSocketSessionTracker sessionTracker;
     private final JwtTokenUtil jwtTokenUtil;
     private SignupRequest signupRequest;
     private AuthRequest authRequest;
@@ -82,11 +88,17 @@ public class AuthController {
         System.out.println("requst for all users");
         try {
             List<User> users = userService.getAllUsers();
-            List<String> usernames = users.stream()
-                    .map(User::getUsername)
-                    .toList();
 
-            return ResponseEntity.ok(new ApiResponse<>(usernames));
+            List<Map<String, Object>> usernamesWithStatus = users.stream()
+                    .map(user -> {
+                        Map<String, Object> userMap = new HashMap<>();
+                        userMap.put("username", user.getUsername());
+                        userMap.put("online", sessionTracker.isOnline(user.getUsername()));
+                        return userMap;
+                    })
+                    .collect(Collectors.toList());
+
+            return ResponseEntity.ok(new ApiResponse<>(usernamesWithStatus));
         } catch (RuntimeException e) {
             System.out.println("All Users Api" + e.getMessage());
             return ResponseEntity.status(500).body(new ApiResponse<>("Failed to fetch users", 500));

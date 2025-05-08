@@ -1,5 +1,6 @@
 package com.demo.chatApp.security;
 
+import com.demo.chatApp.util.WebSocketSessionTracker;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.server.ServerHttpRequest;
@@ -15,6 +16,8 @@ import java.util.Map;
 public class JwtHandshakeInterceptor implements HandshakeInterceptor {
 
     private final JwtTokenUtil jwtTokenUtil;
+    @Autowired
+    private WebSocketSessionTracker sessionTracker;
 
     @Autowired
     public JwtHandshakeInterceptor(JwtTokenUtil jwtTokenUtil) {
@@ -46,6 +49,8 @@ public class JwtHandshakeInterceptor implements HandshakeInterceptor {
             if (username == null || username.isEmpty()) {
                 return false;
             }
+
+            sessionTracker.adduser(username);
 
             attributes.put("username", username);
             attributes.put("token", token);

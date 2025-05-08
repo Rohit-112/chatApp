@@ -32,7 +32,18 @@ public class CustomHandshakeHandler extends DefaultHandshakeHandler {
                                       WebSocketHandler wsHandler,
                                       Map<String, Object> attributes) {
 
-        String token = UriComponentsBuilder.fromUriString(request.getURI().toString())
+        String username = (String) attributes.get("username");
+
+        if (username == null || username.isEmpty()) {
+            System.out.println("[CustomHandshakeHandler] Missing username");
+            return null;
+        }
+
+        System.out.println("[CustomHandshakeHandler] Creating CustomPrincipal with username: " + username);
+        return new CustomPrincipal(username, null);
+    }
+
+       /* String token = UriComponentsBuilder.fromUriString(request.getURI().toString())
                 .build()
                 .getQueryParams()
                 .getFirst("token");
@@ -61,6 +72,6 @@ public class CustomHandshakeHandler extends DefaultHandshakeHandler {
 
         System.out.println("Authenticated user: " + username);
         return new CustomPrincipal(username, user.get().getId());
-    }
+    }*/
 
 }
