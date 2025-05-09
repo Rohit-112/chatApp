@@ -1,13 +1,12 @@
 package com.demo.chatApp.controller;
 
-import com.demo.chatApp.model.User;
+import com.demo.chatApp.model.chat.User;
 import com.demo.chatApp.model.dto.ApiResponse;
 import com.demo.chatApp.model.dto.AuthRequest;
 import com.demo.chatApp.model.dto.AuthResponse;
 import com.demo.chatApp.model.dto.SignupRequest;
 import com.demo.chatApp.security.JwtTokenUtil;
 import com.demo.chatApp.service.UserService;
-import com.demo.chatApp.util.WebSocketEventListener;
 import com.demo.chatApp.util.WebSocketSessionTracker;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -17,7 +16,6 @@ import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @RestController

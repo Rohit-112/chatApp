@@ -1,6 +1,5 @@
 package com.demo.chatApp.config;
 
-import com.demo.chatApp.model.User;
 import com.demo.chatApp.repository.UserRepository;
 import com.demo.chatApp.security.JwtTokenUtil;
 import com.demo.chatApp.security.Principal.CustomPrincipal;
@@ -9,11 +8,9 @@ import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.WebSocketHandler;
 import org.springframework.web.socket.server.support.DefaultHandshakeHandler;
-import org.springframework.web.util.UriComponentsBuilder;
 
 import java.security.Principal;
 import java.util.Map;
-import java.util.Optional;
 
 @Component
 public class CustomHandshakeHandler extends DefaultHandshakeHandler {

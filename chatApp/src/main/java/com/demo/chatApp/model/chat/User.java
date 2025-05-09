@@ -1,4 +1,4 @@
-package com.demo.chatApp.model;
+package com.demo.chatApp.model.chat;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -7,7 +7,7 @@ import lombok.*;
 @Table(name = "users")
 @Getter
 @Setter
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder //makes it easier to construct User objects
 public class User {
