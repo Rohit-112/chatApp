@@ -39,36 +39,4 @@ public class CustomHandshakeHandler extends DefaultHandshakeHandler {
         System.out.println("[CustomHandshakeHandler] Creating CustomPrincipal with username: " + username);
         return new CustomPrincipal(username, null);
     }
-
-       /* String token = UriComponentsBuilder.fromUriString(request.getURI().toString())
-                .build()
-                .getQueryParams()
-                .getFirst("token");
-
-        if (token == null || token.isEmpty()) {
-            System.out.println("Token missing in query string.");
-            return null;
-        }
-
-        if (!jwtTokenUtil.validateToken(token)) {
-            System.out.println("Invalid token.");
-            return null;
-        }
-
-        String username = jwtTokenUtil.getUsernameFromToken(token);
-        if (username == null || username.isEmpty()) {
-            System.out.println("Username is null or empty.");
-            return null;
-        }
-
-        Optional<User> user = userRepository.findByUsername(username);
-        if (user.isEmpty()) {
-            System.out.println("User not found: " + username);
-            return null;
-        }
-
-        System.out.println("Authenticated user: " + username);
-        return new CustomPrincipal(username, user.get().getId());
-    }*/
-
 }

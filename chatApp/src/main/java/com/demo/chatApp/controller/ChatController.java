@@ -2,6 +2,7 @@ package com.demo.chatApp.controller;
 
 import com.demo.chatApp.model.ChatMessage;
 import com.demo.chatApp.model.chat.Message;
+import com.demo.chatApp.service.chat.ChatMessageService;
 import com.demo.chatApp.service.chat.ChatService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
@@ -19,24 +20,29 @@ public class ChatController {
 
     private final SimpMessagingTemplate messagingTemplate;
     private final ChatService chatService;
+    private final ChatMessageService chatMessageService;
 
     @Autowired
-    public ChatController(SimpMessagingTemplate messagingTemplate, ChatService chatService) {
+    public ChatController(SimpMessagingTemplate messagingTemplate, ChatService chatService, ChatMessageService chatMessageService) {
         this.messagingTemplate = messagingTemplate;
         this.chatService = chatService;
+        this.chatMessageService = chatMessageService;
     }
 
     @MessageMapping("/chat/{receiver}")
-    public ChatMessage sendMessage(@DestinationVariable String receiver,
+    public void sendMessage(@DestinationVariable String receiver,
                                    @RequestBody ChatMessage message,
                                    Principal principal) {
 
         String senderName = principal.getName();
         System.out.println("sending message from: " + principal.getName());
         System.out.println("sending message to: " + receiver);
-        Message savedMessage = chatService.saveMessage(senderName, receiver, message.getMessage());
+//        Message savedMessage = chatService.saveMessage(senderName, receiver, message.getMessage());
+
+
         message.setSenderName(senderName);
+        message.setReceiverName(receiver);
         messagingTemplate.convertAndSendToUser(receiver, "/queue/messages", message);
-        return message;
+        chatMessageService.handleOutgoingMessage(message);
     }
 }

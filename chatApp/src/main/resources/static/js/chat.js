@@ -49,7 +49,7 @@ function connectWebSocket() {
       console.log('Connection state:', stompClient.connected ? 'Connected' : 'Not Connected');
 
       // Dynamically subscribe to the user-specific message queue
-      stompClient.subscribe(`/user/${currentUsername}/queue/messages`, function (messageOutput) {
+      stompClient.subscribe(`/user/queue/messages`, function (messageOutput) {
         const message = JSON.parse(messageOutput.body);
         displayIncomingMessage(message);
       });

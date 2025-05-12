@@ -33,9 +33,13 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void configureMessageBroker(@NotNull MessageBrokerRegistry config) {
-        config.enableSimpleBroker("/user");
-        config.setUserDestinationPrefix("/user");
-        config.setApplicationDestinationPrefixes("/app");
-    }
+        config.enableStompBrokerRelay("/queue", "/topic")
+                .setRelayHost("host.docker.internal")
+                .setRelayPort(61613)
+                .setClientLogin("guest")
+                .setClientPasscode("guest");
 
+        config.setApplicationDestinationPrefixes("/app");
+        config.setUserDestinationPrefix("/user");
+    }
 }
