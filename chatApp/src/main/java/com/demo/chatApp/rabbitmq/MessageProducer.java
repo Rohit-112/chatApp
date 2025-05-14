@@ -15,7 +15,7 @@ public class MessageProducer {
     public void sendMessage(ChatMessage chatMessage) {
         rabbitTemplate.convertAndSend(
                 RabbitMQConfig.CHAT_EXCHANGE,
-                RabbitMQConfig.CHAT_ROUTING_KEY,
+                "chat.queue",
                 chatMessage
         );
     }

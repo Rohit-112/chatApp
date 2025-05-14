@@ -5,6 +5,9 @@ import com.demo.chatApp.service.chat.ChatService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -13,8 +16,11 @@ import org.springframework.stereotype.Component;
 public class MessageConsumer {
 
     private final ChatService chatService;
+    private final SimpMessagingTemplate messagingTemplate;
+    @Autowired
+    private RabbitTemplate rabbitTemplate;
 
-    @RabbitListener(queues = "#{T(com.demo.chatApp.config.RabbitMQConfig).CHAT_QUEUE}")
+    @RabbitListener(queues = "chat.queue")
     public void receiveMessage(ChatMessage chatMessage) {
         try {
             log.info("Received message from queue: {}", chatMessage);
@@ -25,9 +31,12 @@ public class MessageConsumer {
                     chatMessage.getMessage()
             );
 
+//            messagingTemplate.convertAndSend("/queue/chat.user." + chatMessage.getReceiverName(), chatMessage);
+
+            log.info("Message sent to WebSocket for user: {}", chatMessage.getReceiverName());
+
         } catch (Exception e) {
             log.error("Failed to process message: {}", chatMessage, e);
-            // Optionally: send to dead-letter queue, retry, or log for audit
         }
     }
 }

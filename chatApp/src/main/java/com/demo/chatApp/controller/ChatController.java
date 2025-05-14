@@ -31,18 +31,16 @@ public class ChatController {
 
     @MessageMapping("/chat/{receiver}")
     public void sendMessage(@DestinationVariable String receiver,
-                                   @RequestBody ChatMessage message,
-                                   Principal principal) {
+                            ChatMessage message,
+                            Principal principal) {
 
         String senderName = principal.getName();
         System.out.println("sending message from: " + principal.getName());
         System.out.println("sending message to: " + receiver);
-//        Message savedMessage = chatService.saveMessage(senderName, receiver, message.getMessage());
 
 
         message.setSenderName(senderName);
         message.setReceiverName(receiver);
-        messagingTemplate.convertAndSendToUser(receiver, "/queue/messages", message);
         chatMessageService.handleOutgoingMessage(message);
     }
 }
