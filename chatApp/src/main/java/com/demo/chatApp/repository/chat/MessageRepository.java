@@ -3,7 +3,10 @@ package com.demo.chatApp.repository.chat;
 import com.demo.chatApp.model.chat.Message;
 import com.demo.chatApp.model.chat.Conversation;
 import com.demo.chatApp.model.chat.User;
+import com.demo.chatApp.model.dto.ChatHistoryDto;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -17,9 +20,17 @@ public interface MessageRepository extends JpaRepository<Message, Long> {
     // Get unread messages for a conversation
     List<Message> findByConversationAndReadStatus(Conversation conversation, boolean readStatus);
 
-    // Get all messages sent by a specific user
-    List<Message> findBySender(User sender);
+    @Query("""
+    SELECT new com.demo.chatApp.model.dto.ChatHistoryDto(
+        m.id, m.content, m.timestamp,
+        m.sender.id, m.sender.username,
+        m.receiver.id, m.receiver.username
+    )
+    FROM Message m
+    WHERE (m.sender.username = :username AND m.receiver.id = :receiverId)
+       OR (m.sender.id = :receiverId AND m.receiver.username = :username)
+    ORDER BY m.timestamp ASC
+""")
+    List<ChatHistoryDto> getChatHistory(@Param("username") String username, @Param("receiverId") Long receiverId);
 
-    // Get all messages received by a specific user
-    List<Message> findByReceiver(User receiver);
 }

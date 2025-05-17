@@ -23,6 +23,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth.html", "chat.html", "js/**").permitAll()
                         .requestMatchers("/api/auth/**","/ws/**").permitAll()
+                        .requestMatchers("/api/chat/**").permitAll()
                         .anyRequest().authenticated()
                 );
         return http.build();

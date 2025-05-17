@@ -55,9 +55,10 @@ public class AuthController {
 
             User savedUser = userService.registerUser(user);
 
-            return ResponseEntity.status(201).body(new ApiResponse<>(savedUser));
+            return ResponseEntity.status(201).body(new ApiResponse<>(savedUser, "Register Successfully"));
 
         } catch (Exception e) {
+            System.out.println("Signup Api: " + e);
             return ResponseEntity.status(400).body(new ApiResponse<>(e.getMessage(), 400));
         }
     }
@@ -68,22 +69,31 @@ public class AuthController {
             User user = userService.getByUsername(request.getUsername());
             System.out.println("Fetched user: " + user);
 
-            if (user != null && passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+            if (user == null) {
+                ApiResponse<AuthResponse> response = new ApiResponse<>("Invalid username or password", 401);
+                return ResponseEntity.status(401).body(response);
+            }
+
+            if (passwordEncoder.matches(request.getPassword(), user.getPassword())) {
                 System.out.println("Password matched for user: " + user.getUsername());
                 String token = jwtTokenUtil.generateToken(user.getUsername());
-                return ResponseEntity.ok(new ApiResponse<>(new AuthResponse(token)));
+
+                ApiResponse<AuthResponse> response = new ApiResponse<>(new AuthResponse(token), "Login Successful");
+                return ResponseEntity.ok(response);
             } else {
                 System.out.println("Invalid password or user not found");
-                return ResponseEntity.status(401).body(new ApiResponse<>("Invalid username or password", 401));
+                ApiResponse<AuthResponse> response = new ApiResponse<>("Invalid username or password", 401);
+                return ResponseEntity.status(401).body(response);
             }
         } catch (Exception e) {
+            System.out.println("Login APi: " + e);
             return ResponseEntity.status(500).body(new ApiResponse<>("Internal server error", 500));
         }
     }
 
     @GetMapping("/users")
-    public ResponseEntity<ApiResponse<?>> getAllUsername(){
-        System.out.println("requst for all users");
+    public ResponseEntity<ApiResponse<?>> getAllUsername() {
+        System.out.println("request for all users");
         try {
             List<User> users = userService.getAllUsers();
 
@@ -96,7 +106,7 @@ public class AuthController {
                     })
                     .collect(Collectors.toList());
 
-            return ResponseEntity.ok(new ApiResponse<>(usernamesWithStatus));
+            return ResponseEntity.ok(new ApiResponse<>(usernamesWithStatus, "Successfully get list"));
         } catch (RuntimeException e) {
             System.out.println("All Users Api" + e.getMessage());
             return ResponseEntity.status(500).body(new ApiResponse<>("Failed to fetch users", 500));

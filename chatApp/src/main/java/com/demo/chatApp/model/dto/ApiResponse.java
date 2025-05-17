@@ -11,9 +11,10 @@ public class ApiResponse<T> {
     private String message;
     private int statusCode;
 
-    public ApiResponse(T data) {
+    public ApiResponse(T data, String message) {
         this.status = true;
         this.data = data;
+        this.message = message;
         this.statusCode = 200;
     }
 
@@ -21,6 +22,7 @@ public class ApiResponse<T> {
         this.status = false;
         this.message = message;
         this.statusCode = statusCode;
+        this.data = null;
     }
 
 }
